@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programa tu brazo — SO-101</title>
+<style>
+  :root {
+    --azul: #2563eb;
+    --azul-oscuro: #1d4ed8;
+    --verde: #16a34a;
+    --rojo: #dc2626;
+    --gris-fondo: #f3f4f6;
+    --gris-borde: #d1d5db;
+    --texto: #111827;
+    --texto-suave: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--gris-fondo);
+    color: var(--texto);
+  }
+  header {
+    background: var(--azul);
+    color: white;
+    padding: 16px 24px;
+  }
+  header h1 { margin: 0; font-size: 1.3rem; }
+  header p { margin: 4px 0 0; font-size: 0.85rem; opacity: 0.9; }
+
+  main {
+    display: grid;
+    grid-template-columns: 260px 1fr 380px;
+    gap: 16px;
+    padding: 16px;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: white;
+    border: 1px solid var(--gris-borde);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .panel h2 {
+    margin: 0 0 12px;
+    font-size: 1rem;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  select, input[type=number] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--gris-borde);
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+  .input-veces { width: 56px; display: inline-block; padding: 4px; margin: 0 4px; }
+
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  .btn-agregar-paso {
+    width: 100%;
+    background: var(--azul);
+    color: white;
+    margin-top: 10px;
+    padding: 10px;
+  }
+  .btn-agregar-paso:hover { background: var(--azul-oscuro); }
+
+  .botones-agregar {
+    display: flex;
+    gap: 6px;
+    margin: 8px 0;
+  }
+  .btn-agregar {
+    background: #e5e7eb;
+    color: var(--texto);
+    flex: 1;
+  }
+  .btn-agregar:hover { background: #d1d5db; }
+
+  .bloque {
+    border: 1px solid var(--gris-borde);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+    background: #fafafa;
+  }
+  .bloque-paso { border-left: 4px solid var(--azul); background: #eff6ff; }
+  .bloque-repetir { border-left: 4px solid #d97706; background: #fffbeb; }
+  .bloque-mientras { border-left: 4px solid #7c3aed; background: #f5f3ff; }
+
+  .cabecera-bloque {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+  }
+  .cabecera-bloque span { flex: 0 0 auto; }
+  .cabecera-bloque label { display: flex; align-items: center; gap: 4px; font-size: 0.85rem; color: var(--texto-suave); }
+
+  .btn-borrar {
+    margin-left: auto;
+    background: none;
+    color: var(--rojo);
+    font-size: 1rem;
+    padding: 2px 8px;
+  }
+  .btn-borrar:hover { background: #fee2e2; }
+
+  .contenedor-hijos {
+    margin: 8px 0 0 16px;
+    padding-left: 10px;
+    border-left: 2px dashed var(--gris-borde);
+  }
+
+  #lienzo { min-height: 120px; }
+  .lienzo-vacio { color: var(--texto-suave); font-size: 0.9rem; font-style: italic; }
+
+  pre#codigo {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    overflow-x: auto;
+    white-space: pre;
+    min-height: 200px;
+  }
+
+  .barra-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 14px 0;
+  }
+  #btnEjecutar { background: var(--verde); color: white; padding: 10px 18px; }
+  #btnEjecutar:disabled { background: #9ca3af; cursor: not-allowed; }
+  #btnDetener { background: var(--rojo); color: white; padding: 10px 18px; }
+  #btnDetener:disabled { background: #9ca3af; cursor: not-allowed; }
+  #btnLimpiar, #btnEjemplo { background: #e5e7eb; padding: 10px 14px; }
+
+  .indicador { font-weight: 700; font-size: 0.9rem; }
+  .indicador.corriendo { color: var(--verde); }
+  .indicador.detenido { color: var(--texto-suave); }
+
+  #log {
+    background: #111827;
+    color: #d1fae5;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 0.8rem;
+    padding: 10px;
+    border-radius: 8px;
+    height: 140px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+
+  .aviso {
+    font-size: 0.8rem;
+    color: var(--texto-suave);
+    margin-top: 10px;
+    line-height: 1.4;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Programa tu brazo</h1>
+  <p id="infoConexion">Conectando...</p>
+</header>
+
+<main>
+  <!-- Panel izquierdo: pasos disponibles -->
+  <div class="panel">
+    <h2>Pasos disponibles</h2>
+    <select id="selPasos"></select>
+    <button class="btn-agregar-paso" onclick="agregarPasoA(programa)">+ Agregar a la secuencia</button>
+    <p class="aviso">
+      Estos son los pasos que ya enseñaste con <code>ensenar_y_jugar.py</code>
+      moviendo el brazo líder. Para enseñar uno nuevo, cierra este servidor
+      y usa ese script en la terminal.
+    </p>
+  </div>
+
+  <!-- Centro: el programa (bloques) -->
+  <div class="panel">
+    <h2>Tu programa</h2>
+    <div id="lienzo"></div>
+    <div class="botones-agregar" style="margin-top:14px;">
+      <button class="btn-agregar" onclick="agregarRepetirA(programa)">+ Repetir</button>
+      <button class="btn-agregar" onclick="agregarMientrasA(programa)">+ Mientras</button>
+      <button id="btnEjemplo" onclick="cargarEjemplo()">Cargar ejemplo</button>
+      <button id="btnLimpiar" onclick="limpiarPrograma()">Vaciar</button>
+    </div>
+
+    <div class="barra-control">
+      <button id="btnEjecutar" onclick="ejecutarPrograma()">▶ Ejecutar</button>
+      <button id="btnDetener" onclick="detenerPrograma()" disabled>⏹ Detener</button>
+      <span id="indicador" class="indicador detenido">○ Detenido</span>
+    </div>
+    <div id="log"></div>
+    <p class="aviso">
+      "Detener" corta el movimiento casi de inmediato (revisa varias veces
+      por segundo), pero no es un paro de emergencia físico — si algo se ve
+      mal, usa el interruptor o desconecta el brazo.
+    </p>
+  </div>
+
+  <!-- Derecha: código equivalente -->
+  <div class="panel">
+    <h2>Código equivalente</h2>
+    <pre id="codigo"></pre>
+    <p class="aviso">
+      Así se vería tu secuencia como un programa de Python normal, usando
+      <code>robot_api.py</code> — lo que arma la página arriba es
+      exactamente esto.
+    </p>
+  </div>
+</main>
+
+<script>
+let contador = 0;
+let programa = [];
+let infoConexion = { puerto: "?", id: "?" };
+
+function nuevoId() { return `b${++contador}`; }
+
+function crearPaso(nombre) {
+  return { id: nuevoId(), tipo: "paso", nombre, invertida: false };
+}
+function crearRepetir() {
+  return { id: nuevoId(), tipo: "repetir", veces: 3, cuerpo: [] };
+}
+function crearMientras() {
+  return { id: nuevoId(), tipo: "mientras", cuerpo: [] };
+}
+
+function agregarPasoA(lista) {
+  const sel = document.getElementById("selPasos");
+  const nombre = sel.value;
+  if (!nombre) {
+    alert("No hay ningún paso seleccionado (¿ya enseñaste alguno con ensenar_y_jugar.py?).");
+    return;
+  }
+  lista.push(crearPaso(nombre));
+  render();
+}
+function agregarRepetirA(lista) { lista.push(crearRepetir()); render(); }
+function agregarMientrasA(lista) { lista.push(crearMientras()); render(); }
+function eliminarDe(lista, idx) { lista.splice(idx, 1); render(); }
+
+function limpiarPrograma() {
+  if (programa.length === 0 || confirm("¿Vaciar todo el programa actual?")) {
+    programa = [];
+    render();
+  }
+}
+
+function cargarEjemplo() {
+  const sel = document.getElementById("selPasos");
+  const nombres = Array.from(sel.options).map(o => o.value).filter(Boolean);
+  const p1 = nombres[0] || "paso1";
+  const p2 = nombres[1] || nombres[0] || "paso2";
+  programa = [
+    crearPaso(p1),
+    Object.assign(crearRepetir(), { veces: 3, cuerpo: [crearPaso(p1)] }),
+    Object.assign(crearMientras(), {
+      cuerpo: [crearPaso(p1), Object.assign(crearPaso(p2), { invertida: true })],
+    }),
+  ];
+  render();
+}
+
+function botonAgregar(texto, onClick, extraClase) {
+  const b = document.createElement("button");
+  b.textContent = texto;
+  b.className = "btn-agregar" + (extraClase ? " " + extraClase : "");
+  b.onclick = onClick;
+  return b;
+}
+
+function renderLista(lista, contenedor) {
+  contenedor.innerHTML = "";
+  if (lista.length === 0) {
+    const vacio = document.createElement("div");
+    vacio.className = "lienzo-vacio";
+    vacio.textContent = "(vacío — agrega un paso, un repetir o un mientras)";
+    contenedor.appendChild(vacio);
+  }
+  lista.forEach((bloque, idx) => {
+    contenedor.appendChild(renderBloque(bloque, lista, idx));
+  });
+  const botones = document.createElement("div");
+  botones.className = "botones-agregar";
+  botones.appendChild(botonAgregar("+ Paso", () => agregarPasoA(lista)));
+  botones.appendChild(botonAgregar("+ Repetir", () => agregarRepetirA(lista)));
+  botones.appendChild(botonAgregar("+ Mientras", () => agregarMientrasA(lista)));
+  contenedor.appendChild(botones);
+}
+
+function renderBloque(bloque, listaPadre, idx) {
+  const div = document.createElement("div");
+  div.className = `bloque bloque-${bloque.tipo}`;
+
+  const cabecera = document.createElement("div");
+  cabecera.className = "cabecera-bloque";
+
+  if (bloque.tipo === "paso") {
+    const span = document.createElement("span");
+    span.textContent = `Paso: ${bloque.nombre}`;
+    cabecera.appendChild(span);
+
+    const labelInv = document.createElement("label");
+    const chk = document.createElement("input");
+    chk.type = "checkbox";
+    chk.checked = bloque.invertida;
+    chk.onchange = () => { bloque.invertida = chk.checked; renderCodigo(); };
+    labelInv.appendChild(chk);
+    labelInv.append(" invertido");
+    cabecera.appendChild(labelInv);
+  } else if (bloque.tipo === "repetir") {
+    const spanA = document.createElement("span");
+    spanA.textContent = "Repetir";
+    cabecera.appendChild(spanA);
+
+    const input = document.createElement("input");
+    input.type = "number";
+    input.min = "1";
+    input.value = bloque.veces;
+    input.className = "input-veces";
+    input.onchange = () => { bloque.veces = Math.max(1, parseInt(input.value) || 1); renderCodigo(); };
+    cabecera.appendChild(input);
+
+    const spanB = document.createElement("span");
+    spanB.textContent = "veces:";
+    cabecera.appendChild(spanB);
+  } else if (bloque.tipo === "mientras") {
+    const span = document.createElement("span");
+    span.textContent = "Mientras no se presione Detener:";
+    cabecera.appendChild(span);
+  }
+
+  const btnBorrar = document.createElement("button");
+  btnBorrar.textContent = "✕";
+  btnBorrar.className = "btn-borrar";
+  btnBorrar.onclick = () => eliminarDe(listaPadre, idx);
+  cabecera.appendChild(btnBorrar);
+
+  div.appendChild(cabecera);
+
+  if (bloque.tipo === "repetir" || bloque.tipo === "mientras") {
+    const contenedorHijos = document.createElement("div");
+    contenedorHijos.className = "contenedor-hijos";
+    renderLista(bloque.cuerpo, contenedorHijos);
+    div.appendChild(contenedorHijos);
+  }
+
+  return div;
+}
+
+function generarCodigo(bloques, indent) {
+  const pad = "    ".repeat(indent);
+  if (bloques.length === 0) {
+    return pad + "pass\n";
+  }
+  let out = "";
+  for (const b of bloques) {
+    if (b.tipo === "paso") {
+      const args = b.invertida
+        ? `${JSON.stringify(b.nombre)}, invertida=True`
+        : JSON.stringify(b.nombre);
+      out += `${pad}robot.seguir_trayectoria(${args})\n`;
+    } else if (b.tipo === "repetir") {
+      out += `${pad}for _ in range(${b.veces}):\n`;
+      out += generarCodigo(b.cuerpo, indent + 1);
+    } else if (b.tipo === "mientras") {
+      out += `${pad}while not detener_pedido():\n`;
+      out += generarCodigo(b.cuerpo, indent + 1);
+    }
+  }
+  return out;
+}
+
+function renderCodigo() {
+  const cuerpo = generarCodigo(programa, 1);
+  const codigo =
+`from robot_api import Robot
+
+with Robot(port=${JSON.stringify(infoConexion.puerto)}, id=${JSON.stringify(infoConexion.id)}) as robot:
+${cuerpo}`;
+  document.getElementById("codigo").textContent = codigo;
+}
+
+function render() {
+  renderLista(programa, document.getElementById("lienzo"));
+  renderCodigo();
+}
+
+async function cargarPasos() {
+  const resp = await fetch("/pasos");
+  const data = await resp.json();
+  const sel = document.getElementById("selPasos");
+  sel.innerHTML = "";
+  if (data.pasos.length === 0) {
+    const opt = document.createElement("option");
+    opt.textContent = "(no hay pasos guardados todavía)";
+    opt.value = "";
+    sel.appendChild(opt);
+    return;
+  }
+  for (const nombre of data.pasos) {
+    const opt = document.createElement("option");
+    opt.value = nombre;
+    opt.textContent = nombre;
+    sel.appendChild(opt);
+  }
+}
+
+async function cargarInfo() {
+  const resp = await fetch("/info");
+  infoConexion = await resp.json();
+  document.getElementById("infoConexion").textContent =
+    `Conectado al follower en ${infoConexion.puerto} (id ${infoConexion.id})`;
+  renderCodigo();
+}
+
+async function ejecutarPrograma() {
+  if (programa.length === 0) {
+    alert("Agrega al menos un bloque al programa antes de ejecutar.");
+    return;
+  }
+  const resp = await fetch("/ejecutar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ programa }),
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    alert("No se pudo ejecutar: " + (err.detail || resp.statusText));
+    return;
+  }
+  actualizarEstado();
+}
+
+async function detenerPrograma() {
+  await fetch("/detener", { method: "POST" });
+}
+
+async function actualizarEstado() {
+  try {
+    const resp = await fetch("/estado");
+    const data = await resp.json();
+    const indicador = document.getElementById("indicador");
+    indicador.textContent = data.corriendo ? "● Corriendo" : "○ Detenido";
+    indicador.className = "indicador " + (data.corriendo ? "corriendo" : "detenido");
+    const log = document.getElementById("log");
+    log.textContent = data.log.join("\n");
+    log.scrollTop = log.scrollHeight;
+    document.getElementById("btnDetener").disabled = !data.corriendo;
+    document.getElementById("btnEjecutar").disabled = data.corriendo;
+  } catch (e) {
+    // el servidor puede estar reiniciando; se reintenta solo en el próximo ciclo
+  }
+}
+
+cargarPasos();
+cargarInfo();
+render();
+actualizarEstado();
+setInterval(actualizarEstado, 1000);
+</script>
+
+</body>
+</html>
